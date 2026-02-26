@@ -1,0 +1,4 @@
+data/toy_twochr.chrom.sizes
+data/toy_twochr.expected_counts.tsv
+data/toy_twochr.gff
+data/toy_twochr.gff.gz

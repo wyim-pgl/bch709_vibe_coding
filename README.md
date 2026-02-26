@@ -1,41 +1,15 @@
 # bch709_vibe_coding
 
-Manual for analyzing genomic feature distribution across yeast chromosomes using:
+This project analyzes genomic feature distribution across yeast chromosomes using:
 - `data/saccharomyces_cerevisiae.gff.gz`
 - `data/chrom.sizes`
 
-## What this project does
+## 1) Installation and Environment Setup (First)
 
-The script computes per-chromosome:
-- Feature counts: `genes`, `exons`, `tRNAs`, `snoRNAs`
-- Feature densities: count per Mb
-- Correlation between chromosome size and feature density (Pearson + Spearman)
+### Prerequisite
+- Conda is installed and available in your shell (`conda --version`).
 
-It also generates summary plots.
-
-## Important feature definitions used
-
-These are strict rules in `scripts/analyze_yeast_features.py`:
-- `genes` = GFF type `gene`
-- `exons` = GFF type `exon` only
-- `tRNAs` = GFF type `tRNA_gene`
-- `snoRNAs` = GFF type `snoRNA_gene`
-
-Notes:
-- `noncoding_exon` is **not** counted as `exon`.
-- `chrmt` and `chrM` are treated as independent chromosome names.
-- If a chromosome appears in GFF but has no size in `chrom.sizes`, densities are set to `NaN` and excluded from correlation calculations.
-
-## File structure
-
-- `environment.yml`: Conda environment
-- `scripts/analyze_yeast_features.py`: Main analysis script
-- `data/`: Input files
-- `results/`: Output tables and figures
-
-## Setup (Conda)
-
-From the project root:
+### Recommended: create environment from `environment.yml`
 
 ```bash
 cd /home/wyim/bin/bch709_vibe_coding
@@ -43,14 +17,40 @@ conda env create -f environment.yml
 conda activate bch709_vibe_coding
 ```
 
-If the environment already exists and you changed dependencies:
+If environment already exists:
 
 ```bash
 conda env update -f environment.yml --prune
 conda activate bch709_vibe_coding
 ```
 
-## Run the analysis
+### Verify installation (recommended)
+
+```bash
+python -c "import pandas, numpy, scipy, matplotlib, seaborn; print('Python OK')"
+```
+
+### Optional reference command style from BCH709 Step 0C
+If you prefer explicit package install commands (instead of YAML), BCH709 Step 0C uses this style:
+
+```bash
+conda create -n bch709_vibe_coding -y -c conda-forge \
+  python=3.11 pandas numpy scipy matplotlib seaborn
+conda activate bch709_vibe_coding
+python -c "import pandas, numpy, scipy, matplotlib, seaborn; print('Python OK')"
+```
+
+### Keep environment reproducible (recommended)
+```bash
+conda env export -n bch709_vibe_coding > environment.yml
+```
+
+### If installation fails
+- Confirm active env: `conda activate bch709_vibe_coding`
+- Retry install/update command
+- Check network access to `conda-forge`
+
+## 2) How to Run
 
 ```bash
 python scripts/analyze_yeast_features.py \
@@ -59,9 +59,7 @@ python scripts/analyze_yeast_features.py \
   --outdir results
 ```
 
-## Outputs
-
-The script writes:
+## 3) Output Files
 
 - `results/feature_counts_and_density_by_chromosome.csv`
 - `results/feature_density_by_chromosome.csv`
@@ -69,21 +67,34 @@ The script writes:
 - `results/feature_counts_by_chromosome.png`
 - `results/feature_density_vs_size.png`
 
-## How to read results
+## 4) What the Script Does
 
-- `feature_counts_and_density_by_chromosome.csv`
-  - One row per chromosome
-  - Contains `size_bp`, raw counts, and density columns (`*_per_mb`)
-- `feature_density_correlations.csv`
-  - Includes `all_chromosomes` and `nuclear_only` subsets
-  - For `nuclear_only`, both `chrM` and `chrmt` are excluded
-  - If a feature has constant density (for example all zero), correlation values are `NaN`
+Per chromosome:
+- Counts `genes`, `exons`, `tRNAs`, `snoRNAs`
+- Density (count per Mb)
+- Correlation of feature density vs chromosome size (Pearson and Spearman)
 
-## Troubleshooting
+## 5) Feature Definition Rules in This Project
 
-- `ModuleNotFoundError` (e.g., matplotlib):
-  - Activate env first: `conda activate bch709_vibe_coding`
-- Conda cannot download packages:
-  - Check network/DNS access to conda channels (`conda-forge`)
-- Empty/zero `exons`:
-  - Your GFF may not have true `exon` entries (only `noncoding_exon`)
+- `genes` = GFF type `gene`
+- `exons` = GFF type `exon` only
+- `tRNAs` = GFF type `tRNA_gene`
+- `snoRNAs` = GFF type `snoRNA_gene`
+- `noncoding_exon` is not counted as `exons`
+- `chrmt` and `chrM` are treated as independent chromosome names
+- If a chromosome has counts but no size in `chrom.sizes`, density is `NaN` and excluded from correlation
+
+## 6) Data Check (if needed)
+If your data files are missing, download with:
+
+```bash
+mkdir -p data
+curl -L -o data/saccharomyces_cerevisiae.gff.gz \
+  http://sgd-archive.yeastgenome.org/curation/chromosomal_feature/saccharomyces_cerevisiae.gff.gz
+curl -L -o data/chrom.sizes \
+  https://hgdownload.soe.ucsc.edu/goldenPath/sacCer3/bigZips/sacCer3.chrom.sizes
+```
+
+## 7) Reference
+Environment setup details above were aligned with BCH709 Vibe Coding Step 0C:
+- https://bch709.plantgenomicslab.org/vibe_coding/index.html#step-0c-environment-creation-commands
